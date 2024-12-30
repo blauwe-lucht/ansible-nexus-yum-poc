@@ -1,0 +1,47 @@
+---
+- name: Configure VM without internet
+  hosts: nointernet
+  become: true
+  tasks:
+    - name: Check connectivity to pypi.org
+      ansible.builtin.wait_for:
+        host: pypi.org
+        port: "{{ item }}"
+        timeout: 1
+      loop:
+        - 80
+        - 443
+      register: wait_for_result
+      ignore_errors: true
+
+    - name: Assert that no connection could be made to pypi.org
+      ansible.builtin.assert:
+        that: wait_for_result.results[0].failed and wait_for_result.results[1].failed
+
+    - name: Create ~/.pip
+      ansible.builtin.file:
+        path: /root/.pip
+        mode: "0755"
+        state: directory
+
+    - name: Create pip.conf, needed to point pip to Nexus
+      ansible.builtin.copy:
+        content: |
+          [global]
+          index-url = http://{{ nexus_host }}:{{ nexus_port }}/repository/pypi/simple
+          trusted-host = {{ nexus_host }}
+        dest: /root/.pip/pip.conf
+        mode: "0644"
+
+    - name: Create .netrc, needed for pypi credentials
+      ansible.builtin.copy:
+        content: |
+          machine {{ nexus_host }}
+              login {{ nexus_download_pypi_user }}
+              password {{ nexus_download_pypi_password }}
+        dest: /root/.netrc
+        mode: "0600"
+
+    - name: Install requests python package from Nexus
+      ansible.builtin.pip:
+        name: requests

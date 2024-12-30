@@ -68,4 +68,36 @@ Vagrant.configure("2") do |config|
             trigger.run = { inline: "vagrant ssh nexus -c 'sudo subscription-manager unregister'" }
         end
    end
+
+   # Internet-less server:
+    config.vm.define "nointernet" do |nointernet|
+        nointernet.vm.box = "almalinux/8"
+        nointernet.vm.hostname = "nointernet"
+
+        nointernet.vm.network "private_network", ip: "192.168.14.35"
+
+        nointernet.vm.provision "shell" do |shell|
+            shell.inline = <<-SHELL
+                set -euxo pipefail
+
+                yum update -y
+                
+                yum install -y python3
+
+                yum install -y firewalld
+                systemctl enable --now firewalld
+                
+                # Allow HTTP(S) to 192.168 subnet:
+                firewall-cmd --permanent --direct --add-rule ipv4 filter OUTPUT 0 -p tcp --dport 80 -d 192.168.0.0/16 -j ACCEPT
+                firewall-cmd --permanent --direct --add-rule ipv4 filter OUTPUT 0 -p tcp --dport 443 -d 192.168.0.0/16 -j ACCEPT
+
+                # Block HTTP(S) to everything else:
+                firewall-cmd --permanent --direct --add-rule ipv4 filter OUTPUT 1 -p tcp --dport 80 -j REJECT
+                firewall-cmd --permanent --direct --add-rule ipv4 filter OUTPUT 1 -p tcp --dport 443 -j REJECT
+
+                firewall-cmd --reload
+                firewall-cmd --list-all
+            SHELL
+        end
+   end
 end

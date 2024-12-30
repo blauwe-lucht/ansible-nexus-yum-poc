@@ -19,6 +19,9 @@
         nexus_config_yum: true
         nexus_repos_yum_hosted:
           - name: yum
+        nexus_config_pypi: true
+        nexus_repos_pypi_hosted:
+          - name: pypi
         nexus_roles:
           - id: upload-yum
             name: upload-yum
@@ -26,11 +29,22 @@
             privileges:
               - nx-repository-view-yum-yum-add
               - nx-repository-view-yum-yum-edit
+          - id: upload-pypi
+            name: upload-pypi
+            description: Uploader to pypi repository
+            privileges:
+              - nx-repository-view-pypi-pypi-add
+              - nx-repository-view-pypi-pypi-edit
           - id: download-yum
             name: download-yum
             description: Downloader of yum repository
             privileges:
               - nx-repository-view-yum-yum-read
+          - id: download-pypi
+            name: download-pypi
+            description: Downloader of pypi repository
+            privileges:
+              - nx-repository-view-pypi-pypi-read
         nexus_local_users:
           - username: upload-yum
             password: Abcd1234!
@@ -40,6 +54,14 @@
             roles:
               - upload-yum
             state: present
+          - username: upload-pypi
+            password: Abcd1234!
+            first_name: upload
+            last_name: pypi
+            email: nobody@example.com
+            roles:
+              - upload-pypi
+            state: present
           - username: download-yum
             password: Abcd1234!
             first_name: download
@@ -47,6 +69,14 @@
             email: nobody@example.com
             roles:
               - download-yum
+            state: present
+          - username: download-pypi
+            password: Abcd1234!
+            first_name: download
+            last_name: pypi
+            email: nobody@example.com
+            roles:
+              - download-pypi
             state: present
 
   tasks:

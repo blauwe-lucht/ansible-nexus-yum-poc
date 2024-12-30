@@ -58,3 +58,40 @@ vagrant destroy -f
 ```
 
 The VMs will be automatically unregistered.
+
+python packages in Nexus krijgen:
+Op machine met internet toegang:
+
+- pip upgraden: pip3 install --upgrade pip
+- packages downloaden (niet installeren): pip3 download requests -d .
+- twine installeren: pip3 install twine
+- twine environment zetten:
+    export TWINE_USERNAME=upload-pypi
+    export TWINE_PASSWORD=Abcd1234!
+    export TWINE_REPOSITORY_URL=<http://192.168.14.34:8081/repository/pypi/>
+- packages uploaden: twine upload *.whl
+
+Op server zonder toegang die packages nodig heeft:
+
+- ~/.netrc
+
+``` text
+machine 192.168.14.34
+    login download-pypi
+    password Abcd1234!
+```
+
+- chmod go-rwx ~/.netrc
+- mkdir ~/.pip
+- ~/.pip/pip.conf
+
+``` text
+[global]
+index-url = http://192.168.14.34:8081/repository/pypi/simple
+trusted-host = 192.168.14.34
+```
+
+- python3 -m venv nexus-test
+- . nexus-test/bin/activate
+- package installeren: pip3 install requests
+Werkt bijna: pip3 install vraagt nog om username en wachtwoord

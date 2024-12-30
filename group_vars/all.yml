@@ -1,0 +1,5 @@
+---
+nexus_host: "192.168.14.34"
+nexus_port: 8081
+nexus_download_pypi_user: download-pypi
+nexus_download_pypi_password: Abcd1234!
